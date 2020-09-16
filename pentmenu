@@ -7,26 +7,19 @@ PS3="Pentmenu>"
 ##START MAINMENU##
 mainmenu()
 {
-#build a main menu using bash select
-#from here, the various sub menus can be selected and from them, modules can be run
-mainmenu=("Recon" "DOS" "Extraction" "View Readme" "Quit")
-select opt in "${mainmenu[@]}"; do
-	if [ "$opt" = "Quit" ]; then
-	echo "Quitting...Thank you for using pentmenu!" && sleep 1 && clear
-	exit 0
-	elif [ "$opt" = "Recon" ]; then
-reconmenu
-	elif [ "$opt" = "DOS" ]; then
-dosmenu
-    elif [ "$opt" = "Extraction" ]; then
-extractionmenu
-  	elif [ "$opt" = "View Readme" ]; then
-showreadme
-	else
-#if no valid option is chosen, chastise the user
-	echo "That's not a valid option! Hit Return to show main menu"
-	fi
-done
+  #build a main menu using bash select
+  #from here, the various sub menus can be selected and from them, modules can be run
+  mainmenu=("Recon" "DOS" "Extraction" "View Readme" "Quit")
+  select opt in "${mainmenu[@]}"; do
+    case "$opt" in 
+      Quit  ) echo "Quitting...Thank you for using pentmenu!" && sleep 1 && clear && exit 0 ;;
+      Recon ) reconmenu ;;
+      DOS   ) dosmenu   ;;
+      Extr* ) extractionmenu ;;
+      View* ) showreadme ;;
+      *     ) echo  "That's not a valid option! Hit Return to show menu"
+    esac
+  done
 }
 ##END MAINMENU##
 ################
@@ -38,41 +31,22 @@ done
 ##START RECONMENU##
 reconmenu()
 {
-#build a menu for the recon modules using bash select
-		reconmenu=("Show IP" "DNS Recon" "Ping Sweep" "Quick Scan" "Detailed Scan" "UDP Scan" "Check Server Uptime" "IPsec Scan" "Go back")
-	select reconopt in "${reconmenu[@]}"; do
-#show external IP & interface IP(s)
-	if [ "$reconopt" = "Show IP" ]; then
-		showip
-#DNS Recon
-    elif [ "$reconopt" = "DNS Recon" ]; then
-        dnsrecon
-#Ping Sweep
-    elif [ "$reconopt" = "Ping Sweep" ]; then
-        pingsweep
-#Recon Network
-    elif [ "$reconopt" = "Quick Scan" ]; then
-        quickscan
-#Stealth Scan
-    elif [ "$reconopt" = "Detailed Scan" ]; then
-        detailedscan
-#UDP Scan
-	elif [ "$reconopt" = "UDP Scan" ]; then
-		udpscan
-#Check uptime of server
-    elif [ "$reconopt" = "Check Server Uptime" ]; then
-        checkuptime
-#IPsec Scan
-	elif [ "$reconopt" = "IPsec Scan" ]; then
-		ipsecscan
-#Go back
-	elif [ "$reconopt" = "Go back" ]; then
-		mainmenu
-## Default if no menu option selected is to return an error
-	else
-  		echo  "That's not a valid option! Hit Return to show menu"
-	fi
-	done
+  #build a menu for the recon modules using bash select
+  reconmenu=("Show IP" "DNS Recon" "Ping Sweep" "Quick Scan" "Detailed Scan" "UDP Scan" "Check Server Uptime" "IPsec Scan" "Go back")
+  select reconopt in "${reconmenu[@]}"; do
+    case $reconopt in 
+      Show*  ) showip ;;
+      DNS*   ) dnsrecon ;;
+      Ping*  ) pingsweep ;;   
+      Quick* ) quickscan ;;    #Recon Network
+      Detai* ) detailedscan ;; #Stealth Scan
+      UDP*   ) udpscan ;;
+      Check* ) checkuptime ;;
+      IPsec* ) ipsecscan ;;
+      Go*    ) return ;;
+      *      ) echo  "That's not a valid option! Hit Return to show menu"
+    esac
+  done
 }
 ##END RECONMENU##
 #################
@@ -80,20 +54,15 @@ reconmenu()
 ################
 ##START SHOWIP##
 showip()
-{		echo "External IP lookup uses curl..."
-		echo "External IP is detected as:"
-#use curl to lookup external IP
-		curl https://canihazip.com/s/
-		echo ""
-		echo ""
-#show interface IP's
-		echo "Interface IP's are:"
-		ip a|grep inet
-#if ip a command fails revert to ifconfig
-	if ! [[ $? = 0 ]]; then
-		ifconfig|grep inet
-	fi
-		echo ""
+{
+  #extip=$(curl -s https://ifconfig.me/ip)
+  printf "External IP: %s\n" $(curl -s https://ifconfig.me/ip)
+  printf "Local IP:    %s\n" $(hostname -I)
+  printf "\nIP4 Interface IP's are:\n"
+  ip a|grep "inet "  || ifconfig|grep "inet "
+  printf "\nIP6 Interface IP's are:\n"
+  ip a|grep "inet6 " || ifconfig|grep "inet6 "
+  printf "\n\n"
 }
 ##END SHOWIP##
 ##############
